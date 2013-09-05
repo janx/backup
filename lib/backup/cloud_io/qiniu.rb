@@ -1,7 +1,6 @@
 # encoding: utf-8
 require 'backup/cloud_io/base'
 require 'qiniu-rs'
-require 'pathname'
 
 module Backup
   module CloudIO
@@ -99,7 +98,7 @@ module Backup
             :uptoken => token,
             :file => src,
             :bucket => bucket,
-            :key => Pathname.new(src).basename.to_s
+            :key => dest
           )
         end
       end
