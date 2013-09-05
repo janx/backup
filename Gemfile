@@ -19,6 +19,7 @@ group :production do
   gem 'thor'
   gem 'open4'
   gem 'fog', '= 1.13.0' # see https://github.com/fog/fog/pull/1905
+  gem 'qiniu-rs'
   gem 'excon'
   gem 'dropbox-sdk', '= 1.5.1' # patched
   gem 'net-ssh'

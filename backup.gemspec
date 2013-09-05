@@ -44,6 +44,8 @@ Gem::Specification.new do |gem|
   gem.add_dependency 'nokogiri', '= 1.5.10'
   gem.add_dependency 'open4', '= 1.3.0'
   gem.add_dependency 'polyglot', '= 0.3.3'
+  gem.add_dependency 'qiniu-rs', '= 3.4.5'
+  gem.add_dependency 'rest-client', '= 1.6.7'
   gem.add_dependency 'ruby-hmac', '= 0.4.0'
   gem.add_dependency 'simple_oauth', '= 0.2.0'
   gem.add_dependency 'thor', '= 0.18.1'
