@@ -19,7 +19,7 @@ module Backup
         @secret_access_key  = options[:secret_access_key]
         @bucket             = options[:bucket]
 
-        Qiniu::RS.establish_connection!(
+        ::Qiniu::RS.establish_connection!(
           :access_key => @access_key_id,
           :secret_key => @secret_access_key
         )
@@ -94,8 +94,8 @@ module Backup
 
       def put_object(src, dest)
         with_retries("PUT '#{ bucket }.qiniudn.com/#{ dest }'") do
-          token = Qiniu::RS.generate_upload_token(:scope => bucket)
-          Qiniu::RS.upload_file(
+          token = ::Qiniu::RS.generate_upload_token(:scope => bucket)
+          ::Qiniu::RS.upload_file(
             :uptoken => token,
             :file => src,
             :bucket => bucket,
