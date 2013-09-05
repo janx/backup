@@ -1,3 +1,16 @@
+This is a fork added Qiniu storage, which can be used the same as S3 storage module.
+
+Example:
+
+```ruby
+  store_with Qiniu do |qiniu|
+    qiniu.access_key_id = 'access key'
+    qiniu.secret_access_key = 'secret'
+    qiniu.bucket = 'bucket name'
+    qiniu.keep = 30
+  end
+```
+
 Backup
 ======
 
