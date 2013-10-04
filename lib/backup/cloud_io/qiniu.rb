@@ -39,14 +39,16 @@ module Backup
         objects = []
         resp = nil
         prefix = prefix.chomp('/')
-        opts = { :prefix => prefix + '/' }
 
-        while resp.nil? || resp.body['IsTruncated']
-          opts.merge!(:marker => objects.last.key) unless objects.empty?
+        while resp.nil? || resp[1]['marker']
+          # a hack: bucket list api is not implemented in Qiniu gem
+          # but exists. here we use the api manually
+          url = "http://rsf.qbox.me/list?bucket=#{bucket}&prefix=#{prefix}"
+          url += "&marker=#{resp[1]['marker']}" if resp && resp[1]['marker']
           with_retries("GET '#{ bucket }/#{ prefix }/*'") do
-            resp = connection.get_bucket(bucket, opts)
+            resp = ::Qiniu::RS::Auth.request url
           end
-          resp.body['Contents'].each do |obj_data|
+          resp[1]['items'].each do |obj_data|
             objects << Object.new(self, obj_data)
           end
         end
@@ -72,19 +74,9 @@ module Backup
         keys = Array(objects_or_keys).dup
         keys.map!(&:key) if keys.first.is_a?(Object)
 
-        opts = { :quiet => true } # only report Errors in DeleteResult
-        until keys.empty?
-          _keys = keys.slice!(0, 1000)
-          with_retries('DELETE Multiple Objects') do
-            resp = connection.delete_multiple_objects(bucket, _keys, opts)
-            unless resp.body['DeleteResult'].empty?
-              errors = resp.body['DeleteResult'].map do |result|
-                error = result['Error']
-                "Failed to delete: #{ error['Key'] }\n" +
-                "Reason: #{ error['Code'] }: #{ error['Message'] }"
-              end.join("\n")
-              raise Error, "The server returned the following:\n#{ errors }"
-            end
+        with_retries('DELETE Multiple Objects') do
+          unless ::Qiniu::RS.batch_delete(bucket, keys)
+            raise Error, "Failed to delete keys in bucket #{bucket}."
           end
         end
       end
@@ -104,13 +96,16 @@ module Backup
       end
 
       class Object
-        attr_reader :key, :etag, :storage_class
+        attr_reader :key, :etag, :put_time, :size, :mime, :customer
 
         def initialize(cloud_io, data)
           @cloud_io = cloud_io
-          @key  = data['Key']
-          @etag = data['ETag']
-          @storage_class = data['StorageClass']
+          @key  = data['key']
+          @put_time = data['time']
+          @etag = data['hash']
+          @size = data['fsize']
+          @mime = data['mimeType']
+          @customer = data['customer']
         end
 
         private
@@ -118,6 +113,7 @@ module Backup
         def metadata
           @metadata ||= @cloud_io.head_object(self).headers
         end
+
       end
 
     end
