@@ -60,7 +60,7 @@ module Backup
       def head_object(object)
         resp = nil
         with_retries("HEAD '#{ bucket }/#{ object.key }'") do
-          resp = connection.head_object(bucket, object.key)
+          resp = ::Qiniu::RS.stat(bucket, object.key)
         end
         resp
       end
@@ -111,7 +111,7 @@ module Backup
         private
 
         def metadata
-          @metadata ||= @cloud_io.head_object(self).headers
+          @metadata ||= @cloud_io.head_object(self)
         end
 
       end
